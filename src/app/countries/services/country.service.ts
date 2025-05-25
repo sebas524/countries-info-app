@@ -5,6 +5,7 @@ import {catchError, map, Observable, of, tap, throwError,} from 'rxjs';
 import {RESTCountry} from '../interfaces/rest-countries.interface';
 import {CountryMapper} from '../mappers/country.mapper';
 import {Country} from '../interfaces/country.interface';
+import {Region} from '../interfaces/region.type';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ export class CountryService {
 
   private queryCacheByCapital = new Map<string, Country[]>()
   private queryCacheByCountry = new Map<string, Country[]>()
-
+  private queryCacheByRegion = new Map<Region, Country[]>()
 
   constructor() {
   }
@@ -63,6 +64,29 @@ export class CountryService {
       catchError((error) => {
         return throwError(() => {
           return new Error(`Could not get any countries under given query: ${query}`);
+        })
+      })
+    )
+  }
+
+  searchByRegion(region: Region): Observable<Country[]> {
+
+    if (this.queryCacheByRegion.has(region)) {
+      return of(this.queryCacheByRegion.get(region)!)
+    }
+
+    console.log(`reaching server with ${region} query`)
+    return this.http.get<RESTCountry[]>(`${environment.countriesApiUrl}/region/${region}`).pipe(
+      map((resp) => {
+        return CountryMapper.mapApiCountriesToCountries(resp)
+      }), tap(
+        (countries) => {
+          return this.queryCacheByRegion.set(region, countries)
+        }
+      ),
+      catchError((error) => {
+        return throwError(() => {
+          return new Error(`Could not get any countries under given query: ${region}`);
         })
       })
     )

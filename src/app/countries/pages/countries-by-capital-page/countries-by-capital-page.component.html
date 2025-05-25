@@ -1,18 +1,15 @@
-<section class="flex flex-row gap-2 mt-2">
-
-  <app-countries-search-bar placeholder="Search by country capital..."
-                            (value)="query.set($event)"></app-countries-search-bar>
-
+<section class="flex flex-row gap-2 mt-2 max-w-xl mx-auto justify-center">
+  <app-countries-search-bar
+    placeholder="Search by country capital..."
+    (value)="query.set($event)"
+  ></app-countries-search-bar>
 </section>
 
 <section class="mt-5">
-  <app-countries-list [countries]="countryResource.value() ?? []" [errorMsg]="countryResource.error()"
-                      [isEmpty]="countryResource.value()?.length === 0"
-                      [isLoading]="countryResource.isLoading()"></app-countries-list>
+  <app-countries-list
+    [countries]="countryResource.value() ?? []"
+    [errorMsg]="countryResource.error()"
+    [isEmpty]="countryResource.value()?.length === 0"
+    [isLoading]="countryResource.isLoading()"
+  ></app-countries-list>
 </section>
-
-
-
-
-
-
