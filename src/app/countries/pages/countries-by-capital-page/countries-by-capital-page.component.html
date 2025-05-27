@@ -2,6 +2,7 @@
   <app-countries-search-bar
     placeholder="Search by country capital..."
     (value)="query.set($event)"
+    [initialValue]="query()"
   ></app-countries-search-bar>
 </section>
 

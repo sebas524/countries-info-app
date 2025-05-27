@@ -1,72 +1,37 @@
-import {Component, inject, signal} from '@angular/core';
-import {CountriesSearchBarComponent} from '../../components/countries-search-bar/countries-search-bar.component';
-import {CountriesListComponent} from '../../components/countries-list/countries-list.component';
-import {CountryService} from '../../services/country.service';
-import {of} from 'rxjs';
-import {rxResource} from '@angular/core/rxjs-interop';
+import { Component, inject, linkedSignal, signal } from '@angular/core';
+import { CountriesSearchBarComponent } from '../../components/countries-search-bar/countries-search-bar.component';
+import { CountriesListComponent } from '../../components/countries-list/countries-list.component';
+import { CountryService } from '../../services/country.service';
+import { of } from 'rxjs';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-countries-by-capital-page',
   imports: [CountriesSearchBarComponent, CountriesListComponent],
   templateUrl: './countries-by-capital-page.component.html',
-  styleUrl: './countries-by-capital-page.component.css'
+  styleUrl: './countries-by-capital-page.component.css',
 })
 export class CountriesByCapitalPageComponent {
+  countryService = inject(CountryService);
 
-  countryService = inject(CountryService)
+  activatedRoute = inject(ActivatedRoute);
 
-  // isLoading = signal(false)
-  // containsError = signal<string | null>(null)
-  // countriesArray = signal<Country[]>([])
-  //
-  // onSearch(query: string) {
-  //   if (this.isLoading()) return
-  //   this.isLoading.set(true);
-  //   this.containsError.set(null)
-  //
-  //
-  //   this.countryService.searchByCapital(query).subscribe({
-  //     next: (resp) => {
-  //       this.isLoading.set(false);
-  //       this.countriesArray.set(resp)
-  //     },
-  //     error: (err) => {
-  //       this.isLoading.set(false);
-  //       this.countriesArray.set([])
-  //       this.containsError.set(err)
-  //     }
-  //   });
-  //
-  // }
+  router = inject(Router);
 
+  queryParam = this.activatedRoute.snapshot.queryParamMap.get('query') ?? '';
 
-  // query = signal('')
-  //
-  // countryResource = resource({
-  //
-  //   request: () => ({query: this.query()}),
-  //   loader: async ({request}) => {
-  //     if (!request.query) return []
-  //     return await firstValueFrom(
-  //       this.countryService.searchByCapital(request.query)
-  //     )
-  //   }
-  //
-  //
-  // })
-
-
-  query = signal('')
+  query = linkedSignal(() => this.queryParam);
 
   countryResource = rxResource({
+    request: () => ({ query: this.query() }),
+    loader: ({ request }) => {
+      if (!request.query) return of([]);
 
-    request: () => ({query: this.query()}),
-    loader: ({request}) => {
-      if (!request.query) return of([])
-      return this.countryService.searchByCapital(request.query)
-
-    }
-
-
-  })
+      this.router.navigate(['/countries/by-capital'], {
+        queryParams: { query: request.query },
+      });
+      return this.countryService.searchByCapital(request.query);
+    },
+  });
 }
